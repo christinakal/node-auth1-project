@@ -43,6 +43,11 @@ router.post("/signup", (req, res) => {
         let hashedPassword = bcrypt.hashSync(req.body.password, 14);
         req.body.password = hashedPassword;
 
+        req.session.isLoggedIn = true; 
+        req.session.username = req.body.username;
+
+        console.log("After signup:", req.session);
+
         database.addUser(req.body)
             .then(usersAdded => {
                 res.status(200).json(usersAdded);
@@ -65,11 +70,36 @@ router.post("/login", (req, res) => {
         database.getUserByUsername(req.body.username)
             .then(databaseInfo => {
                 if (databaseInfo && bcrypt.compareSync(req.body.password, databaseInfo.password))
-                    { res.status(200).json({message: "Welcome, " + databaseInfo.username}) }
+                    { 
+                        req.session.isLoggedIn = true;
+                        req.session.username = databaseInfo.username;
+
+                        console.log("After loggin", req.session);
+
+                        res.status(200).json({message: "Welcome, " + databaseInfo.username
+                    }) }
                 else
                     { res.status(401).json({ message: "Invalid Credentials."})}
             })
             .catch(error => { res.status(401).json({ message: "You shall not pass."})})
+    }
+})
+
+
+// GET: log out a user
+router.get("/logout", (req, res) => {
+
+    // user is not logged in -- ignore
+    if (!req.session)
+        { res.status(200).json({message: "No need to log out if you are not logged in."}) }
+    else
+    {
+        req.session.destroy(error => {
+            if (error)
+                { res.status(500).json({message: "Could not log out."}) }
+            else
+                { res.status(200).json({message: "Successfully logged out."}) }
+        })
     }
 })
 
