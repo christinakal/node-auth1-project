@@ -20,7 +20,7 @@ router.get("/users", middleware, (req, res) => {
 })
 
 // GET a user by ID
-router.get("/:id", (req, res) => {
+router.get("/:id", middleware, (req, res) => {
 
     database.getUserByID(req.params.id)
         .then(user => {
