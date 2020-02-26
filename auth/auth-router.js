@@ -20,11 +20,15 @@ router.get("/users", middleware, (req, res) => {
 })
 
 // GET a user by ID
-router.get("/:id", middleware, (req, res) => {
+router.get("/users/:id", middleware, (req, res) => {
 
     database.getUserByID(req.params.id)
         .then(user => {
-            res.status(200).json(user);
+
+            if (user)
+                { res.status(200).json(user); }
+            else
+                { res.status(404).json({message: "No user with ID " + req.params.id + " found."}) }
         })
         .catch(error => {
             res.status(500).json({message: "Could not get user."})
@@ -43,10 +47,10 @@ router.post("/signup", (req, res) => {
         let hashedPassword = bcrypt.hashSync(req.body.password, 14);
         req.body.password = hashedPassword;
 
-        req.session.isLoggedIn = true; 
+        req.session.isLoggedIn = true;
         req.session.username = req.body.username;
 
-        console.log("After signup:", req.session);
+        console.log("Upon signup: req.session:", req.session);
 
         database.addUser(req.body)
             .then(usersAdded => {
@@ -70,14 +74,14 @@ router.post("/login", (req, res) => {
         database.getUserByUsername(req.body.username)
             .then(databaseInfo => {
                 if (databaseInfo && bcrypt.compareSync(req.body.password, databaseInfo.password))
-                    { 
+                    {
                         req.session.isLoggedIn = true;
                         req.session.username = databaseInfo.username;
 
-                        console.log("After loggin", req.session);
+                        console.log("Upon logging in: req.session:", req.session);
 
-                        res.status(200).json({message: "Welcome, " + databaseInfo.username
-                    }) }
+                        res.status(200).json({message: "Welcome, " + databaseInfo.username})
+                    }
                 else
                     { res.status(401).json({ message: "Invalid Credentials."})}
             })
@@ -85,11 +89,10 @@ router.post("/login", (req, res) => {
     }
 })
 
-
 // GET: log out a user
 router.get("/logout", (req, res) => {
 
-    // user is not logged in -- ignore
+    // user is not logged in; ignore
     if (!req.session)
         { res.status(200).json({message: "No need to log out if you are not logged in."}) }
     else
@@ -102,6 +105,5 @@ router.get("/logout", (req, res) => {
         })
     }
 })
-   
 
 module.exports = router;
