@@ -6,7 +6,7 @@ const middleware = require("./restricted-middleware");
 const database = require("./auth-model");
 
 const router = express.Router();
-
+ 
 // GET all users
 router.get("/users", middleware, (req, res) => {
 

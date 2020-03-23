@@ -10,7 +10,7 @@ module.exports = {
 
 function getUsers() {
     return database("users");
-}
+} 
 
 function getUserByID(id) {
     return database("users")
